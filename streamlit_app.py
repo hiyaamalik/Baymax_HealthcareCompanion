@@ -31,7 +31,7 @@ def encode_text(texts):
     tokenizer.pad_token = tokenizer.eos_token      # Padding will use eos_token
     
     # Enable truncation and padding explicitly
-    inputs = tokenizer(texts, return_tensors="pt", padding=True, truncation=True, max_length=512)  # Set max_length if required
+    inputs = tokenizer(texts, return_tensors="pt", padding=True, truncation=True, max_length=512)
     
     # Ensure the model is on the correct device (GPU/CPU)
     outputs = model.transformer.wte(inputs.input_ids.to(device))
@@ -53,33 +53,32 @@ def retrieve_info(query):
 
 # Function to generate a response based on the query and relevant context
 def generate_response(query):
-    # Retrieve relevant context from the knowledge base
     context = retrieve_info(query)
+    # Adding line breaks for better clarity in the prompt
+    prompt = f"User Query:\n{query}\n\nContext:\n{context}\n\nAnswer:"
     
-    # Format the prompt with proper line breaks for clarity
-    prompt = (
-        f"User Query:\n{query}\n\n"
-        f"Context:\n{context}\n\n"
-        f"Answer:"
-    )
-    
-    # Generate a response with improved settings
+    # Generate the response using the text-generation pipeline
     response = generator(
-        prompt,
-        max_length=200,  # Slightly increase length for completeness
-        num_return_sequences=1,
-        truncation=True,
-        pad_token_id=generator.tokenizer.eos_token_id,
+        prompt, 
+        max_length=250, 
+        num_return_sequences=1, 
+        truncation=True, 
+        pad_token_id=generator.tokenizer.eos_token_id
     )
     
-    # Extract the text and clean it up to avoid abrupt endings
+    # Ensure the response is complete
     generated_text = response[0]["generated_text"].strip()
-    
-    # Post-process to remove redundancy and ensure logical ending
-    if "Answer:" in generated_text:
-        generated_text = generated_text.split("Answer:")[-1].strip()  # Get only the answer part
-    if generated_text.endswith(","):
-        generated_text = generated_text.rstrip(",") + "."  # Ensure logical sentence closure
+    if not generated_text.endswith(('.', '!', '?')):
+        # Regenerate with a modified prompt if the response seems incomplete
+        prompt += " In summary:"
+        response = generator(
+            prompt, 
+            max_length=200, 
+            num_return_sequences=1, 
+            truncation=True, 
+            pad_token_id=generator.tokenizer.eos_token_id
+        )
+        generated_text = response[0]["generated_text"].strip()
     
     return generated_text
 
@@ -125,4 +124,5 @@ st.markdown("""
 **Pro Tip:** Use specific queries for the best results!  
 **Example:** "What are the symptoms of celiac disease?"
 """)
-st.markdown("Made with ❤️ using Streamlit and Transformers.")
+st.markdown("Made with ❤️ for all Celiac Patients and health freaks out there.")
+
