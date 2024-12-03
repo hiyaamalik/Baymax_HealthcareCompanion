@@ -45,6 +45,7 @@ def retrieve_info(query):
     return " ".join(relevant_info)
 
 # Function to generate a response based on the query and relevant context
+# Function to generate a response based on the query and relevant context
 def generate_response(query):
     # Retrieve relevant context from the knowledge base
     context = retrieve_info(query)
@@ -72,7 +73,7 @@ def generate_response(query):
     # Post-process to remove unwanted content
     if "Answer:" in generated_text:
         generated_text = generated_text.split("Answer:")[-1].strip()
-    
+
     # Filter sentences for relevance and coherence
     sentences = generated_text.split(". ")
     filtered_sentences = [
@@ -81,12 +82,12 @@ def generate_response(query):
         if len(sentence) > 20 and not sentence.startswith("How does")
     ]  # Keep meaningful sentences and filter out irrelevant ones
     
-    # Join sentences until a full stop is encountered
+    # Stop generating text after encountering a specific marker or paragraph break
     final_response = ""
     for sentence in filtered_sentences:
         final_response += sentence + ". "
-        # Stop when a full stop is encountered
-        if sentence.endswith("."):
+        # Stop when a paragraph break or a specific marker is encountered
+        if "Celiac" in sentence:  # Use any condition you prefer here
             break
     
     # Remove any extra spaces and ensure the response ends logically
