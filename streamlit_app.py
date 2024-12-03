@@ -99,7 +99,7 @@ def generate_response(query):
         prompt,
         max_length=175,  # Allow for enough length to handle the desired range
         num_return_sequences=1,
-        temperature=0.7,  # Moderate creativity for detailed answers
+        temperature=0.9,  # Moderate creativity for detailed answers
         repetition_penalty=1.2,  # Avoid repetitive phrases
         truncation=True,
         pad_token_id=generator.tokenizer.eos_token_id,
