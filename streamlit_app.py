@@ -49,37 +49,41 @@ def generate_response(query):
     # Retrieve relevant context from the knowledge base
     context = retrieve_info(query)
     
-    # Format the prompt with clear structure and line breaks
+    # Format the prompt
     prompt = (
         f"User Query:\n{query}\n\n"
         f"Context:\n{context}\n\n"
         f"Answer:"
     )
     
-    # Generate the response with constraints
+    # Generate the response
     response = generator(
         prompt,
-        max_length=150,  # Limit length for concise answers
+        max_length=150,  # Adjust length for concise answers
         num_return_sequences=1,
+        temperature=0.7,  # Controls randomness; lower values for more deterministic output
+        repetition_penalty=1.2,  # Discourages repetitive outputs
+        truncation=True,
         pad_token_id=generator.tokenizer.eos_token_id,
     )
     
-    # Extract the text and clean it up
+    # Extract and clean up the generated text
     generated_text = response[0]["generated_text"].strip()
     
-    # Extract only the "Answer" part and remove redundant lines
+    # Ensure the response only includes relevant content
     if "Answer:" in generated_text:
         generated_text = generated_text.split("Answer:")[-1].strip()
     
-    # Post-process to remove abrupt endings or unrelated lines
+    # Post-process to remove incomplete sentences
     sentences = generated_text.split(". ")
-    final_response = ". ".join(sentence for sentence in sentences if "gluten" in sentence or "celiac" in sentence)
+    final_response = ". ".join(sentence for sentence in sentences if len(sentence) > 10)  # Filter out very short sentences
     
-    # Ensure the final response ends logically
+    # Ensure the response ends logically
     if not final_response.endswith("."):
         final_response += "."
     
     return final_response
+
 
 
 # Streamlit Appearance Setup
@@ -93,7 +97,7 @@ st.set_page_config(
 st.title("Cel.AI🤖")
 st.subheader("The Gluten Intolerance GPT")
 st.markdown("""
-Welcome to the **Celiac Disease Assistant**! 🌟  
+Welcome to the **Gluten Free Lifestyle Assistant**! 🌟  
 Ask me anything about celiac disease or related health concerns.  
 I use advanced AI and a curated knowledge base to provide accurate responses.
 """)
