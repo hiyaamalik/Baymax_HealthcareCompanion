@@ -76,7 +76,12 @@ def generate_response(query):
     
     # Filter sentences for relevance and coherence
     sentences = generated_text.split(". ")
-    filtered_sentences = [sentence for sentence in sentences if len(sentence) > 20]  # Keep meaningful sentences
+    filtered_sentences = [
+        sentence.strip()
+        for sentence in sentences
+        if len(sentence) > 20 and not sentence.startswith("How does")
+    ]  # Keep meaningful sentences and filter out irrelevant ones
+    
     final_response = ". ".join(filtered_sentences)
     
     # Ensure the response ends logically
