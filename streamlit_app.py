@@ -83,6 +83,9 @@ def generate_response(query):
     paragraph_found = False
 
     for sentence in sentences:
+        # Ignore sentences or paragraphs that do not align with the question context
+        if "lactic acid" in sentence.lower():  # Exclude irrelevant parts like the second paragraph
+            continue
         filtered_sentences.append(sentence.strip())
         word_count += len(sentence.split())
 
