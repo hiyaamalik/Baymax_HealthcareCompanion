@@ -53,13 +53,12 @@ def generate_response(query):
     prompt = (
         f"User Query: {query}\n"
         f"Context: {context}\n\n"
-        
     )
     
     # Generate the response
     response = generator(
         prompt,
-        max_length=120,  # Allow enough length for detailed responses
+        max_length=300,  # Allow enough length for detailed responses
         num_return_sequences=1,
         temperature=0.7,  # Moderate creativity for detailed answers
         repetition_penalty=1.2,  # Avoid repetitive phrases
@@ -74,34 +73,25 @@ def generate_response(query):
     if "Answer:" in generated_text:
         generated_text = generated_text.split("Answer:")[-1].strip()
 
-    # Split the generated text into sentences
-    sentences = generated_text.split(". ")
+    # Split the generated text into paragraphs based on line breaks
+    paragraphs = generated_text.split("\n\n")
     
-    # Track word count and detect first paragraph break
-    filtered_sentences = []
+    # Initialize the response and word count tracker
+    final_response = ""
     word_count = 0
-    paragraph_found = False
 
-    for sentence in sentences:
-        # Ignore sentences or paragraphs that do not align with the question context
-        if "lactic acid" in sentence.lower():  # Exclude irrelevant parts like the second paragraph
-            continue
-        filtered_sentences.append(sentence.strip())
-        word_count += len(sentence.split())
-
-        # Check if a paragraph break occurs (empty line between paragraphs)
-        if sentence == "":
-            paragraph_found = True
+    # Loop through the paragraphs and add content until we hit the first paragraph break or word count limit
+    for paragraph in paragraphs:
+        # Add the paragraph to the response and update word count
+        word_count += len(paragraph.split())
         
-        # Stop generation after first paragraph and within the word range
-        if word_count >= 100 and word_count <= 120:
+        # If word count exceeds 160 or the first paragraph is reached, stop
+        if word_count >= 150 and word_count <= 160:
+            final_response += paragraph.strip()
             break
         
-        if paragraph_found:  # Stop after the first paragraph
-            break
-
-    # Join filtered sentences to form a coherent response
-    final_response = ". ".join(filtered_sentences)
+        # Add paragraph to final response if not exceeding word limit
+        final_response += paragraph.strip() + "\n\n"
     
     # Ensure the response ends logically
     if not final_response.endswith("."):
@@ -112,6 +102,8 @@ def generate_response(query):
         final_response = "I'm sorry, I couldn't find a suitable answer. Please try rephrasing your question."
     
     return final_response
+
+
 
 
 # Streamlit Appearance Setup
