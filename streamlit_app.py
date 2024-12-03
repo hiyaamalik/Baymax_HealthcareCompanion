@@ -59,7 +59,7 @@ def generate_response(query):
     # Generate the response
     response = generator(
         prompt,
-        max_length=250,  # Allow enough length for detailed responses
+        max_length=150,  # Allow enough length for detailed responses
         num_return_sequences=1,
         temperature=0.7,  # Moderate creativity for detailed answers
         repetition_penalty=1.2,  # Avoid repetitive phrases
