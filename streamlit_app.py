@@ -58,7 +58,7 @@ def generate_response(query):
     # Generate the response
     response = generator(
         prompt,
-        max_length=200,  # Set a max length to ensure the answer is long enough
+        max_length=200,  # Allow for enough length to handle the desired range
         num_return_sequences=1,
         temperature=0.7,  # Moderate creativity for detailed answers
         repetition_penalty=1.2,  # Avoid repetitive phrases
@@ -73,26 +73,27 @@ def generate_response(query):
     if "Answer:" in generated_text:
         generated_text = generated_text.split("Answer:")[-1].strip()
 
-    # Split into sentences for better structure
+    # Split into sentences and handle line breaks
     sentences = generated_text.split(". ")
-    filtered_sentences = [
-        sentence.strip()
-        for sentence in sentences
-        if len(sentence) > 20  # Keep meaningful sentences
-    ]
-    
-    # Stop generating text when a specific paragraph break or line break is encountered
-    final_response = ""
+    filtered_sentences = []
     word_count = 0
-    for sentence in filtered_sentences:
-        final_response += sentence + ". "
-        word_count += len(sentence.split())
-        
-        # Stop if the response exceeds the word count range (150-170 words)
-        if word_count >= 150 and word_count <= 170:
+    for sentence in sentences:
+        # If the sentence exceeds a certain word count, stop
+        if word_count >= 150 and word_count <= 160:
             break
-    
-    # Ensure the response ends logically
+        
+        # Add sentences to the response
+        filtered_sentences.append(sentence.strip())
+        word_count += len(sentence.split())
+
+        # Check for paragraph breaks or line breaks
+        if "\n" in sentence or sentence == "":
+            break
+
+    # Join filtered sentences into a coherent response
+    final_response = ". ".join(filtered_sentences)
+
+    # Ensure the response ends logically and has no trailing spaces
     final_response = final_response.strip()
     
     # Fallback for overly vague or failed responses
