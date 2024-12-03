@@ -1,6 +1,6 @@
 streamlit
 openai
-transformers==4.37.0
+transformers
 torch
 faiss-cpu
 numpy
