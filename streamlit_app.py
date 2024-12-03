@@ -94,7 +94,7 @@ def generate_response(query):
             paragraph_found = True
         
         # Stop generation after first paragraph and within the word range
-        if word_count >= 150 and word_count <= 160:
+        if word_count >= 100 and word_count <= 150:
             break
         
         if paragraph_found:  # Stop after the first paragraph
