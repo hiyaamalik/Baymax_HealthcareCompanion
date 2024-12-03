@@ -53,34 +53,42 @@ def retrieve_info(query):
 
 # Function to generate a response based on the query and relevant context
 def generate_response(query):
+    # Retrieve relevant context from the knowledge base
     context = retrieve_info(query)
-    # Adding line breaks for better clarity in the prompt
-    prompt = f"User Query:\n{query}\n\nContext:\n{context}\n\nAnswer:"
     
-    # Generate the response using the text-generation pipeline
-    response = generator(
-        prompt, 
-        max_length=250, 
-        num_return_sequences=1, 
-        truncation=True, 
-        pad_token_id=generator.tokenizer.eos_token_id
+    # Format the prompt with clear structure and line breaks
+    prompt = (
+        f"User Query:\n{query}\n\n"
+        f"Context:\n{context}\n\n"
+        f"Answer:"
     )
     
-    # Ensure the response is complete
-    generated_text = response[0]["generated_text"].strip()
-    if not generated_text.endswith(('.', '!', '?')):
-        # Regenerate with a modified prompt if the response seems incomplete
-        prompt += " In summary:"
-        response = generator(
-            prompt, 
-            max_length=200, 
-            num_return_sequences=1, 
-            truncation=True, 
-            pad_token_id=generator.tokenizer.eos_token_id
-        )
-        generated_text = response[0]["generated_text"].strip()
+    # Generate the response with constraints
+    response = generator(
+        prompt,
+        max_length=150,  # Limit length for concise answers
+        num_return_sequences=1,
+        truncation=True,
+        pad_token_id=generator.tokenizer.eos_token_id,
+    )
     
-    return generated_text
+    # Extract the text and clean it up
+    generated_text = response[0]["generated_text"].strip()
+    
+    # Extract only the "Answer" part and remove redundant lines
+    if "Answer:" in generated_text:
+        generated_text = generated_text.split("Answer:")[-1].strip()
+    
+    # Post-process to remove abrupt endings or unrelated lines
+    sentences = generated_text.split(". ")
+    final_response = ". ".join(sentence for sentence in sentences if "gluten" in sentence or "celiac" in sentence)
+    
+    # Ensure the final response ends logically
+    if not final_response.endswith("."):
+        final_response += "."
+    
+    return final_response
+
 
 # Streamlit Appearance Setup
 st.set_page_config(
