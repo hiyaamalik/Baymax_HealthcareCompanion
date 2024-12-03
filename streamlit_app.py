@@ -59,7 +59,7 @@ def generate_response(query):
     # Generate the response
     response = generator(
         prompt,
-        max_length=140,  # Allow enough length for detailed responses
+        max_length=130,  # Allow enough length for detailed responses
         num_return_sequences=1,
         temperature=0.7,  # Moderate creativity for detailed answers
         repetition_penalty=1.2,  # Avoid repetitive phrases
@@ -94,7 +94,7 @@ def generate_response(query):
             paragraph_found = True
         
         # Stop generation after first paragraph and within the word range
-        if word_count >= 100 and word_count <= 150:
+        if word_count >= 100 and word_count <= 120:
             break
         
         if paragraph_found:  # Stop after the first paragraph
