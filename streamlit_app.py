@@ -53,7 +53,7 @@ def generate_response(query):
     prompt = (
         f"User Query: {query}\n"
         f"Context: {context}\n\n"
-        "Answer the query based on the given context in a concise and clear way:"
+        
     )
     
     # Generate the response
