@@ -1,2 +1,6 @@
 streamlit
 openai
+transformers
+torch
+faiss-cpu
+numpy
