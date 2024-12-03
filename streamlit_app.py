@@ -10,15 +10,18 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 # Initialize the DistilGPT-2 model (a lighter version of GPT-2)
 generator = pipeline("text-generation", model="distilgpt2", device=device)
 
-# Knowledge base
+# Define a simple medical knowledge base (this can be expanded)
 knowledge_base = [
     "Celiac disease is an autoimmune disorder where the ingestion of gluten causes damage to the small intestine. "
     "The disease is triggered by the body's immune response to gluten, leading to inflammation and damage to the villi. "
-    "Celiac disease requires a lifelong gluten-free diet to manage symptoms and prevent complications."
+    "Celiac disease requires a lifelong gluten-free diet to manage symptoms and prevent complications.",
+    "Symptoms of celiac disease include diarrhea, weight loss, abdominal pain, and fatigue. It can also lead to skin rashes, bone pain, and mood changes.",
+    "A gluten-free diet is essential for managing celiac disease. Avoiding gluten helps heal the damaged small intestine and prevent further health problems.",
+    "Gluten is a protein found in wheat, barley, and rye. Individuals with celiac disease must completely avoid foods containing these grains."
     # Add more sentences as needed...
 ]
 
-# Function to encode text into embeddings
+# Function to encode text into embeddings using a pre-trained model
 def encode_text(texts):
     tokenizer = AutoTokenizer.from_pretrained("distilgpt2")
     model = AutoModelForCausalLM.from_pretrained("distilgpt2")
@@ -48,7 +51,7 @@ def retrieve_info(query):
     relevant_info = [knowledge_base[i] for i in I[0]]
     return " ".join(relevant_info)
 
-# Function to generate a response
+# Function to generate a response based on the query and relevant context
 def generate_response(query):
     context = retrieve_info(query)
     prompt = f"User Query: {query}\nContext: {context}\nAnswer:"
@@ -84,6 +87,7 @@ if st.button("Get Response 🚀"):
     if query.strip():
         with st.spinner("Thinking... 🤔"):
             try:
+                # Generate the AI response based on the user's query
                 response = generate_response(query)
                 st.success("Here's what I found! 🧠")
                 st.markdown(f"**{response}**")
