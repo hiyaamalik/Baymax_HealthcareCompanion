@@ -51,9 +51,9 @@ def generate_response(query):
     
     # Format the prompt
     prompt = (
-        f"User Query:\n{query}\n\n"
-        f"Context:\n{context}\n\n"
-        f"Answer:"
+        f"User Query: {query}\n"
+        f"Context: {context}\n\n"
+        "Answer the query based on the given context in a concise and clear way:"
     )
     
     # Generate the response
@@ -61,28 +61,34 @@ def generate_response(query):
         prompt,
         max_length=150,  # Adjust length for concise answers
         num_return_sequences=1,
-        temperature=0.7,  # Controls randomness; lower values for more deterministic output
-        repetition_penalty=1.2,  # Discourages repetitive outputs
+        temperature=0.7,  # Moderate creativity for detailed answers
+        repetition_penalty=1.2,  # Avoid repetitive phrases
         truncation=True,
         pad_token_id=generator.tokenizer.eos_token_id,
     )
     
-    # Extract and clean up the generated text
+    # Extract and clean the generated text
     generated_text = response[0]["generated_text"].strip()
     
-    # Ensure the response only includes relevant content
+    # Post-process to remove unwanted content
     if "Answer:" in generated_text:
         generated_text = generated_text.split("Answer:")[-1].strip()
     
-    # Post-process to remove incomplete sentences
+    # Filter sentences for relevance and coherence
     sentences = generated_text.split(". ")
-    final_response = ". ".join(sentence for sentence in sentences if len(sentence) > 10)  # Filter out very short sentences
+    filtered_sentences = [sentence for sentence in sentences if len(sentence) > 20]  # Keep meaningful sentences
+    final_response = ". ".join(filtered_sentences)
     
     # Ensure the response ends logically
     if not final_response.endswith("."):
         final_response += "."
     
+    # Fallback for overly vague or failed responses
+    if len(final_response) < 20:
+        final_response = "I'm sorry, I couldn't find a suitable answer. Please try rephrasing your question."
+    
     return final_response
+
 
 
 
