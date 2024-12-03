@@ -58,7 +58,7 @@ def generate_response(query):
     # Generate the response
     response = generator(
         prompt,
-        max_length=160,  # Adjust length for concise answers
+        max_length=200,  # Set a max length to ensure the answer is long enough
         num_return_sequences=1,
         temperature=0.7,  # Moderate creativity for detailed answers
         repetition_penalty=1.2,  # Avoid repetitive phrases
@@ -81,19 +81,22 @@ def generate_response(query):
         if len(sentence) > 20  # Keep meaningful sentences
     ]
     
-    # Stop generating text when a specific keyword or paragraph break is encountered
+    # Stop generating text when a specific paragraph break or line break is encountered
     final_response = ""
+    word_count = 0
     for sentence in filtered_sentences:
         final_response += sentence + ". "
-        # Stop if "Celiac" is mentioned (or any other keyword you prefer)
-        if "Celiac" in sentence:
+        word_count += len(sentence.split())
+        
+        # Stop if the response exceeds the word count range (150-170 words)
+        if word_count >= 150 and word_count <= 170:
             break
     
-    # Remove extra spaces and ensure the response ends logically
+    # Ensure the response ends logically
     final_response = final_response.strip()
     
     # Fallback for overly vague or failed responses
-    if len(final_response) < 20:
+    if len(final_response.split()) < 20:
         final_response = "I'm sorry, I couldn't find a suitable answer. Please try rephrasing your question."
     
     return final_response
