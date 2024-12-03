@@ -22,11 +22,19 @@ knowledge_base = [
 def encode_text(texts):
     tokenizer = AutoTokenizer.from_pretrained("distilgpt2")
     model = AutoModelForCausalLM.from_pretrained("distilgpt2")
-    tokenizer.pad_token_id = tokenizer.eos_token_id  # Set pad_token_id to eos_token_id to avoid warning
-    tokenizer.pad_token = tokenizer.eos_token  # Make sure padding uses eos token
-    inputs = tokenizer(texts, return_tensors="pt", padding=True, truncation=True)  # Enable truncation
-    outputs = model.transformer.wte(inputs.input_ids.to(device))  # Move to device (GPU/CPU)
-    return outputs.mean(dim=1).detach().cpu().numpy()  # Ensure result is on CPU
+    
+    # Ensure padding is done correctly
+    tokenizer.pad_token_id = tokenizer.eos_token_id  # Use eos_token_id for padding
+    tokenizer.pad_token = tokenizer.eos_token      # Padding will use eos_token
+    
+    # Enable truncation and padding explicitly
+    inputs = tokenizer(texts, return_tensors="pt", padding=True, truncation=True, max_length=512)  # Set max_length if required
+    
+    # Ensure the model is on the correct device (GPU/CPU)
+    outputs = model.transformer.wte(inputs.input_ids.to(device))
+    
+    # Return the embeddings as numpy array
+    return outputs.mean(dim=1).detach().cpu().numpy()
 
 # Encode the knowledge base and create a FAISS index
 encoded_kb = encode_text(knowledge_base)
@@ -44,7 +52,9 @@ def retrieve_info(query):
 def generate_response(query):
     context = retrieve_info(query)
     prompt = f"User Query: {query}\nContext: {context}\nAnswer:"
-    response = generator(prompt, max_length=150, num_return_sequences=1)
+    
+    # Ensure truncation is applied to the generation process
+    response = generator(prompt, max_length=150, num_return_sequences=1, truncation=True, pad_token_id=generator.tokenizer.eos_token_id)
     return response[0]["generated_text"].strip()
 
 # Streamlit Appearance Setup
