@@ -45,7 +45,6 @@ def retrieve_info(query):
     return " ".join(relevant_info)
 
 # Function to generate a response based on the query and relevant context
-# Function to generate a response based on the query and relevant context
 def generate_response(query):
     # Retrieve relevant context from the knowledge base
     context = retrieve_info(query)
@@ -53,7 +52,7 @@ def generate_response(query):
     # Format the prompt
     prompt = (
         f"User Query: {query}\n"
-        f"Answer: {context}\n\n"
+        f"Context: {context}\n\n"
     )
     
     # Generate the response
@@ -74,23 +73,23 @@ def generate_response(query):
     if "Answer:" in generated_text:
         generated_text = generated_text.split("Answer:")[-1].strip()
 
-    # Filter sentences for relevance and coherence
+    # Split into sentences for better structure
     sentences = generated_text.split(". ")
     filtered_sentences = [
         sentence.strip()
         for sentence in sentences
-        if len(sentence) > 20 and not sentence.startswith("How does")
-    ]  # Keep meaningful sentences and filter out irrelevant ones
+        if len(sentence) > 20  # Keep meaningful sentences
+    ]
     
-    # Stop generating text after encountering a specific marker or paragraph break
+    # Stop generating text when a specific keyword or paragraph break is encountered
     final_response = ""
     for sentence in filtered_sentences:
         final_response += sentence + ". "
-        # Stop when a paragraph break or a specific marker is encountered
-        if "Celiac" in sentence:  # Use any condition you prefer here
+        # Stop if "Celiac" is mentioned (or any other keyword you prefer)
+        if "Celiac" in sentence:
             break
     
-    # Remove any extra spaces and ensure the response ends logically
+    # Remove extra spaces and ensure the response ends logically
     final_response = final_response.strip()
     
     # Fallback for overly vague or failed responses
@@ -98,6 +97,7 @@ def generate_response(query):
         final_response = "I'm sorry, I couldn't find a suitable answer. Please try rephrasing your question."
     
     return final_response
+
 
 # Streamlit Appearance Setup
 st.set_page_config(
