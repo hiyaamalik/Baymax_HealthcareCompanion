@@ -18,7 +18,6 @@ knowledge_base = [
     "Symptoms of celiac disease include diarrhea, weight loss, abdominal pain, and fatigue. It can also lead to skin rashes, bone pain, and mood changes.",
     "A gluten-free diet is essential for managing celiac disease. Avoiding gluten helps heal the damaged small intestine and prevent further health problems.",
     "Gluten is a protein found in wheat, barley, and rye. Individuals with celiac disease must completely avoid foods containing these grains."
-    # Add more sentences as needed...
 ]
 
 # Function to encode text into embeddings using a pre-trained model
@@ -26,17 +25,11 @@ def encode_text(texts):
     tokenizer = AutoTokenizer.from_pretrained("distilgpt2")
     model = AutoModelForCausalLM.from_pretrained("distilgpt2")
     
-    # Ensure padding is done correctly
     tokenizer.pad_token_id = tokenizer.eos_token_id  # Use eos_token_id for padding
     tokenizer.pad_token = tokenizer.eos_token      # Padding will use eos_token
     
-    # Enable truncation and padding explicitly
     inputs = tokenizer(texts, return_tensors="pt", padding=True, truncation=True, max_length=512)
-    
-    # Ensure the model is on the correct device (GPU/CPU)
     outputs = model.transformer.wte(inputs.input_ids.to(device))
-    
-    # Return the embeddings as numpy array
     return outputs.mean(dim=1).detach().cpu().numpy()
 
 # Encode the knowledge base and create a FAISS index
@@ -68,7 +61,6 @@ def generate_response(query):
         prompt,
         max_length=150,  # Limit length for concise answers
         num_return_sequences=1,
-        truncation=True,
         pad_token_id=generator.tokenizer.eos_token_id,
     )
     
@@ -98,7 +90,8 @@ st.set_page_config(
 )
 
 # App Header
-st.title("Medical Advisor 🤖")
+st.title("Cel.AI🤖")
+st.subheader("The Gluten Intolerance GPT")
 st.markdown("""
 Welcome to the **Celiac Disease Assistant**! 🌟  
 Ask me anything about celiac disease or related health concerns.  
@@ -133,4 +126,3 @@ st.markdown("""
 **Example:** "What are the symptoms of celiac disease?"
 """)
 st.markdown("Made with ❤️ for all Celiac Patients and health freaks out there.")
-
