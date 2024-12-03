@@ -53,7 +53,7 @@ def generate_response(query):
     # Format the prompt
     prompt = (
         f"User Query: {query}\n"
-        f"Context: {context}\n\n"
+        f"Answer: {context}\n\n"
     )
     
     # Generate the response
