@@ -31,7 +31,7 @@ def encode_text(texts):
     tokenizer.pad_token = tokenizer.eos_token      # Padding will use eos_token
     
     # Enable truncation and padding explicitly
-    inputs = tokenizer(texts, return_tensors="pt", padding=True, truncation=True, max_length=512)  # Set max_length if required
+    inputs = tokenizer(texts, return_tensors="pt", padding=True, truncation=True, max_length=512)
     
     # Ensure the model is on the correct device (GPU/CPU)
     outputs = model.transformer.wte(inputs.input_ids.to(device))
@@ -54,11 +54,33 @@ def retrieve_info(query):
 # Function to generate a response based on the query and relevant context
 def generate_response(query):
     context = retrieve_info(query)
-    prompt = f"User Query: {query}\nContext: {context}\nAnswer:"
+    # Adding line breaks for better clarity in the prompt
+    prompt = f"User Query:\n{query}\n\nContext:\n{context}\n\nAnswer:"
     
-    # Ensure truncation is applied to the generation process
-    response = generator(prompt, max_length=150, num_return_sequences=1, truncation=True, pad_token_id=generator.tokenizer.eos_token_id)
-    return response[0]["generated_text"].strip()
+    # Generate the response using the text-generation pipeline
+    response = generator(
+        prompt, 
+        max_length=250, 
+        num_return_sequences=1, 
+        truncation=True, 
+        pad_token_id=generator.tokenizer.eos_token_id
+    )
+    
+    # Ensure the response is complete
+    generated_text = response[0]["generated_text"].strip()
+    if not generated_text.endswith(('.', '!', '?')):
+        # Regenerate with a modified prompt if the response seems incomplete
+        prompt += " In summary:"
+        response = generator(
+            prompt, 
+            max_length=250, 
+            num_return_sequences=1, 
+            truncation=True, 
+            pad_token_id=generator.tokenizer.eos_token_id
+        )
+        generated_text = response[0]["generated_text"].strip()
+    
+    return generated_text
 
 # Streamlit Appearance Setup
 st.set_page_config(
