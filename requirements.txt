@@ -1,7 +1,8 @@
 streamlit
-openai
 transformers
 torch
 faiss-cpu
 numpy
-
+pandas
+scipy
+scikit-learn
