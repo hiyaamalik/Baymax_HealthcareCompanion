@@ -2,9 +2,13 @@ import streamlit as st
 from transformers import pipeline, AutoModelForCausalLM, AutoTokenizer
 import faiss
 import numpy as np
+import torch
+
+# Ensure the device is set correctly for PyTorch (if you're using a GPU)
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 # Initialize the DistilGPT-2 model (a lighter version of GPT-2)
-generator = pipeline("text-generation", model="distilgpt2")
+generator = pipeline("text-generation", model="distilgpt2", device=device)
 
 # Knowledge base
 knowledge_base = [
@@ -18,10 +22,11 @@ knowledge_base = [
 def encode_text(texts):
     tokenizer = AutoTokenizer.from_pretrained("distilgpt2")
     model = AutoModelForCausalLM.from_pretrained("distilgpt2")
-    tokenizer.pad_token = tokenizer.eos_token
-    inputs = tokenizer(texts, return_tensors="pt", padding=True, truncation=True)
-    outputs = model.transformer.wte(inputs.input_ids)
-    return outputs.mean(dim=1).detach().numpy()
+    tokenizer.pad_token_id = tokenizer.eos_token_id  # Set pad_token_id to eos_token_id to avoid warning
+    tokenizer.pad_token = tokenizer.eos_token  # Make sure padding uses eos token
+    inputs = tokenizer(texts, return_tensors="pt", padding=True, truncation=True)  # Enable truncation
+    outputs = model.transformer.wte(inputs.input_ids.to(device))  # Move to device (GPU/CPU)
+    return outputs.mean(dim=1).detach().cpu().numpy()  # Ensure result is on CPU
 
 # Encode the knowledge base and create a FAISS index
 encoded_kb = encode_text(knowledge_base)
