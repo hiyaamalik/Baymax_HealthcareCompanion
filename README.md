@@ -4,8 +4,6 @@
 
 A Streamlit Cloud app that provides AI-powered healthcare guidance, leveraging a knowledge base curated and managed by medical experts to deliver accurate, up-to-date information and personalized support.
 
-[![Open in Streamlit](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://chatbot-template.streamlit.app/)
-
 ### Features ✨
 - **AI-Powered Assistance**: Get accurate medical answers with AI.
 - **Health Tracking**: Track your health progress and get advice on lifestyle changes.
