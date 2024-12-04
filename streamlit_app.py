@@ -142,7 +142,7 @@ def generate_response(query):
 
 # Streamlit Appearance Setup
 st.set_page_config(
-    page_title="Medical Advisor 🤖",
+    page_title="Baymax here!",
     page_icon="⚕️",
     layout="wide",
 )
