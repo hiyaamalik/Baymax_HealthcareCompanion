@@ -58,6 +58,7 @@ def retrieve_info(query):
     return " ".join(relevant_info)
 
 # Function to generate a response based on the query and relevant context
+# Function to generate a response based on the query and relevant context
 def generate_response(query):
     # Retrieve relevant context from the knowledge base
     context = retrieve_info(query)
@@ -75,7 +76,7 @@ def generate_response(query):
     # Generate the response
     response = generator(
         prompt,
-        max_length=160,  # Adjust length for concise answers
+        max_new_tokens=160,  # Adjust number of new tokens to control output length
         num_return_sequences=1,
         temperature=0.7,  # Moderate creativity for detailed answers
         repetition_penalty=1.2,  # Avoid repetitive phrases
