@@ -8,7 +8,8 @@ import torch
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 # Initialize the DistilGPT-2 model (a lighter version of GPT-2)
-generator = pipeline("text-generation", model="distilgpt2", device=device)
+generator = AutoModelForCausalLM.from_pretrained("distilgpt2").to(device)
+tokenizer = AutoTokenizer.from_pretrained("distilgpt2")
 
 # Define a simple medical knowledge base (this can be expanded)
 knowledge_base = [
@@ -18,66 +19,16 @@ knowledge_base = [
     "Symptoms of celiac disease include diarrhea, weight loss, abdominal pain, and fatigue. It can also lead to skin rashes, bone pain, and mood changes.",
     "A gluten-free diet is essential for managing celiac disease. Avoiding gluten helps heal the damaged small intestine and prevent further health problems.",
     "Gluten is a protein found in wheat, barley, and rye. Individuals with celiac disease must completely avoid foods containing these grains.",
-    "Baymax is a versatile AI-powered personal healthcare companion designed to assist with medical queries, wellness tracking, and health insights.",
-    "Maintaining hydration is essential for overall health, as water supports digestion, nutrient absorption, and cellular function.",
-    "Diabetes is a chronic condition characterized by high blood sugar levels due to insufficient insulin production or the body's inability to use insulin effectively.",
-    "Regular exercise can significantly improve cardiovascular health, mental well-being, and weight management.",
-    "Hypertension, or high blood pressure, is a condition where the force of blood against the artery walls is consistently too high, increasing the risk of heart disease.",
-    "Asthma is a chronic respiratory condition that causes inflammation and narrowing of the airways, leading to difficulty breathing, wheezing, and coughing.",
-    "Mental health is a crucial aspect of overall wellness, encompassing emotional, psychological, and social well-being.",
-    "Chronic stress can negatively impact both mental and physical health, contributing to conditions such as anxiety, depression, and hypertension.",
-    "A balanced diet rich in fruits, vegetables, lean proteins, and whole grains is essential for maintaining optimal health.",
-    "Sleep is vital for physical recovery and mental clarity. Adults should aim for 7-9 hours of sleep per night.",
-    "Anemia is a condition in which the body lacks enough healthy red blood cells to carry adequate oxygen to tissues, often causing fatigue and weakness.",
-    "Allergies occur when the immune system reacts to a foreign substance such as pollen, pet dander, or certain foods.",
-    "Vitamin D is essential for bone health and immune function. Sun exposure and fortified foods are common sources.",
-    "Migraine is a neurological condition characterized by intense, throbbing headaches often accompanied by nausea, sensitivity to light, and sound.",
-    "Arthritis refers to inflammation of the joints, causing pain, stiffness, and decreased mobility.",
-    "Regular health checkups and screenings are vital for early detection and management of potential health issues.",
-    "Cancer is the uncontrolled growth of abnormal cells in the body, which can invade nearby tissues and spread to other parts of the body.",
-    "Cardiovascular diseases, including heart attacks and strokes, are the leading cause of death globally, often preventable through lifestyle changes.",
-    "Smoking is one of the leading causes of preventable diseases, including lung cancer, heart disease, and chronic obstructive pulmonary disease (COPD).",
-    "Obesity increases the risk of various health conditions, including type 2 diabetes, hypertension, and sleep apnea.",
-    "The immune system protects the body against infections and diseases by identifying and neutralizing harmful pathogens.",
-    "Vaccines are critical for preventing diseases such as measles, polio, and influenza by training the immune system to recognize pathogens.",
-    "Chronic kidney disease is a condition in which the kidneys lose their ability to filter waste from the blood effectively.",
-    "Osteoporosis is a condition characterized by weak and brittle bones, increasing the risk of fractures, especially in older adults.",
-    "Alzheimer's disease is a progressive neurological disorder that leads to memory loss, cognitive decline, and changes in behavior.",
-    "Depression is a common mental health disorder that negatively affects mood, thoughts, and physical well-being.",
-    "The digestive system breaks down food into nutrients the body can absorb, involving organs such as the stomach, intestines, and liver.",
-    "Skin health is influenced by factors such as diet, hydration, and protection from UV rays. Sunscreen is essential for preventing skin damage.",
-    "The respiratory system supplies oxygen to the body and removes carbon dioxide, relying on organs like the lungs and trachea.",
-    "The liver is a vital organ responsible for detoxifying the blood, producing bile, and regulating metabolism.",
-    "The endocrine system regulates hormones that control growth, metabolism, and reproduction, with the thyroid gland playing a significant role.",
-    "The brain is the control center of the body, managing functions like memory, emotions, and motor coordination.",
-    "The human microbiome, consisting of trillions of microorganisms, plays a crucial role in digestion, immunity, and overall health.",
-    "Anxiety disorders are among the most common mental health conditions, characterized by excessive worry and fear.",
-    "Exercise releases endorphins, which act as natural painkillers and mood elevators.",
-    "Posture affects musculoskeletal health, and poor posture can lead to back pain and other physical issues.",
-    "Dehydration can cause symptoms such as headache, dizziness, and fatigue, highlighting the importance of drinking enough water daily.",
-    "Nutritional deficiencies, such as a lack of iron or vitamin B12, can lead to specific health problems like anemia.",
-    "Good oral hygiene, including brushing and flossing, helps prevent dental issues such as cavities and gum disease.",
-    "Prolonged exposure to loud noise can lead to hearing loss, emphasizing the importance of protecting your ears in noisy environments.",
-    "The heart beats approximately 100,000 times per day, pumping oxygenated blood throughout the body.",
-    "Good mental health practices, like mindfulness and relaxation techniques, can help manage stress and improve overall well-being."
+    # Add more relevant knowledge as needed
 ]
 
-
 # Function to encode text into embeddings using a pre-trained model
-from transformers import AutoTokenizer, AutoModelForCausalLM
-import faiss
-import numpy as np
-
-# Function to encode text
 def encode_text(texts):
-    tokenizer = AutoTokenizer.from_pretrained("distilgpt2")
-    model = AutoModelForCausalLM.from_pretrained("distilgpt2")
-    
     tokenizer.pad_token_id = tokenizer.eos_token_id  # Use eos_token_id for padding
     tokenizer.pad_token = tokenizer.eos_token  # Padding will use eos_token
     
     inputs = tokenizer(texts, return_tensors="pt", padding=True, truncation=True, max_length=512)
-    outputs = model.transformer.wte(inputs.input_ids)  # Correct access to model embedding weights
+    outputs = generator.transformer.wte(inputs.input_ids)  # Correct access to model embedding weights
     return outputs.mean(dim=1).detach().cpu().numpy()
 
 # Encode the knowledge base and create a FAISS index
@@ -104,15 +55,12 @@ def generate_response(query):
         "Answer the query based on the context provided. Be specific and relevant to the topic."
     )
     
-    # Initialize the model and tokenizer
-    generator = AutoModelForCausalLM.from_pretrained("distilgpt2")
-    tokenizer = AutoTokenizer.from_pretrained("distilgpt2")
-    
     eos_token_id = tokenizer.convert_tokens_to_ids(".")  # Full stop (.) as EOS token
     
     # Generate the response
+    inputs = tokenizer(prompt, return_tensors="pt").to(device)
     response = generator.generate(
-        input_ids=tokenizer(prompt, return_tensors="pt").input_ids,
+        input_ids=inputs.input_ids,
         max_length=150,
         num_return_sequences=1,
         temperature=0.7,  # Moderate creativity for detailed answers
@@ -149,16 +97,6 @@ def generate_response(query):
     
     return final_response
 
-# Test the improved function with a query about diabetes
-query = "how is diabetes caused"
-response = generate_response(query)
-print(response)
-
-
-
-
-
-
 # Streamlit Appearance Setup
 st.set_page_config(
     page_title="Baymax here!",
@@ -181,7 +119,6 @@ st.sidebar.image(
     caption="Baymax: Your Personal Healthcare Companion",
     use_column_width=True
 )
-
 
 # Main Chat Interface
 st.subheader("🔍 Ask Your Question")
