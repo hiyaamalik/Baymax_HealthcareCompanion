@@ -122,27 +122,21 @@ st.set_page_config(
 )
 
 # App Header
-st.title("Baymax 🩺")
+st.title("Baymax")
 st.subheader("Your Personal Healthcare Companion")
 st.markdown("""
-Welcome to **Baymax**! 🌟  
+Welcome to **Baymax**, your personal healthcare companion! 🌟  
 Ask me anything about health, wellness, or medical concerns.  
-I use advanced AI to provide accurate and personalized responses.
+I use advanced AI and a curated knowledge base to provide accurate, helpful responses.
 """)
 
-# Sidebar Configuration with Image
-st.sidebar.image(
-    "https://upload.wikimedia.org/wikipedia/en/thumb/0/0b/Baymax_Big_Hero_6.png/220px-Baymax_Big_Hero_6.png", 
-    use_column_width=True, caption="Baymax: Your Healthcare Friend"
-)
-
-# Initialize session state for memory (Q&A storage)
-if "qa_memory" not in st.session_state:
-    st.session_state.qa_memory = []
+# Sidebar Configuration
+st.sidebar.title("⚙️ Settings")
+st.sidebar.markdown("Adjust your preferences and explore additional options here!")
 
 # Main Chat Interface
 st.subheader("🔍 Ask Your Question")
-query = st.text_input("Type your question here:", help="E.g., What are the symptoms of diabetes?")
+query = st.text_input("Type your question here:", help="E.g., What are the symptoms of celiac disease?")
 
 if st.button("Get Response 🚀"):
     if query.strip():
@@ -150,11 +144,6 @@ if st.button("Get Response 🚀"):
             try:
                 # Generate the AI response based on the user's query
                 response = generate_response(query)
-                
-                # Save the Q&A to session state
-                st.session_state.qa_memory.append((query, response))
-                
-                # Display the current response
                 st.success("Here's what I found! 🧠")
                 st.markdown(f"**{response}**")
             except Exception as e:
@@ -162,18 +151,10 @@ if st.button("Get Response 🚀"):
     else:
         st.warning("Please enter a valid question! 📝")
 
-# Display Previous Q&A
-if st.session_state.qa_memory:
-    st.markdown("### 🗂️ Your Previous Questions & Answers")
-    for i, (q, a) in enumerate(st.session_state.qa_memory, 1):
-        st.markdown(f"**{i}. Question:** {q}")
-        st.markdown(f"**Answer:** {a}")
-        st.markdown("---")
-
 # Footer
 st.markdown("""
 ---
 **Pro Tip:** Use specific queries for the best results!  
 **Example:** "What are the symptoms of diabetes?"
 """)
-st.markdown("Made with ❤️ to keep you healthy and informed.")
+st.markdown("Made with ❤️ for your health and well-being.")
