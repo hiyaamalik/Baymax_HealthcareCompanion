@@ -98,6 +98,9 @@ def generate_response(query):
         f"Context: {context}\n\n"
     )
     
+    # Get the EOS token ID for the full stop (.)
+    eos_token_id = generator.tokenizer.convert_tokens_to_ids(".")
+    
     # Generate the response
     response = generator(
         prompt,
@@ -106,7 +109,7 @@ def generate_response(query):
         temperature=0.7,  # Moderate creativity for detailed answers
         repetition_penalty=1.2,  # Avoid repetitive phrases
         truncation=True,
-        pad_token_id=generator.tokenizer.convert_tokens_to_ids(".")  # Full stop as pad token
+        pad_token_id=eos_token_id  # Full stop as pad token
     )
     
     # Extract and clean the generated text
@@ -135,6 +138,7 @@ def generate_response(query):
         final_response = "I'm sorry, I couldn't find a suitable answer. Please try rephrasing your question."
     
     return final_response
+
 
 
 
