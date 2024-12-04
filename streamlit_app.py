@@ -102,7 +102,7 @@ def generate_response(query):
     # Generate the response
     response = generator(
         prompt,
-        max_length=160,  # Adjust length for concise answers
+        max_length=130,  # Adjust length for concise answers
         num_return_sequences=1,
         temperature=0.7,  # Moderate creativity for detailed answers
         repetition_penalty=1.2,  # Avoid repetitive phrases
