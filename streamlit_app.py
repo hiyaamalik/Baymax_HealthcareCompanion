@@ -57,28 +57,19 @@ def retrieve_info(query):
     relevant_info = [knowledge_base[i] for i in I[0]]
     return " ".join(relevant_info)
 
-# Function to generate a response based on the query and relevant context
-# Function to generate a response based on the query and relevant context
 def generate_response(query):
     # Retrieve relevant context from the knowledge base
     context = retrieve_info(query)
     
     # Create a refined prompt
-    prompt = f"""
-    User's Query: {query}
-
-    Context:
-    {context}
-
-    
-    """
+    prompt = f"User's Query: {query}\n\nContext: {context}"
     
     # Generate the response
     response = generator(
         prompt,
         max_new_tokens=160,  # Limit the number of new tokens
         num_return_sequences=1,
-        temperature=0.7,  # Moderate creativity for detailed answers
+        temperature=0.5,  # Moderate creativity for detailed answers
         repetition_penalty=1.2,  # Avoid repetitive phrases
         truncation=True,
         pad_token_id=generator.tokenizer.eos_token_id,
@@ -103,6 +94,7 @@ def generate_response(query):
         final_response += "."
 
     return final_response
+
 
 
 
