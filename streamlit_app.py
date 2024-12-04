@@ -53,12 +53,13 @@ def generate_response(query):
     prompt = (
         f"User Query: {query}\n"
         f"Context: {context}\n\n"
+        
     )
     
     # Generate the response
     response = generator(
         prompt,
-        max_length=135,  # Allow enough length for detailed responses
+        max_length=160,  # Adjust length for concise answers
         num_return_sequences=1,
         temperature=0.7,  # Moderate creativity for detailed answers
         repetition_penalty=1.2,  # Avoid repetitive phrases
@@ -72,26 +73,16 @@ def generate_response(query):
     # Post-process to remove unwanted content
     if "Answer:" in generated_text:
         generated_text = generated_text.split("Answer:")[-1].strip()
-
-    # Split the generated text into paragraphs based on line breaks
-    paragraphs = generated_text.split("\n\n")
     
-    # Initialize the response and word count tracker
-    final_response = ""
-    word_count = 0
-
-    # Loop through the paragraphs and add content until we hit the first paragraph break or word count limit
-    for paragraph in paragraphs:
-        # Add the paragraph to the response and update word count
-        word_count += len(paragraph.split())
-        
-        # If word count exceeds 160 or the first paragraph is reached, stop
-        if word_count >= 150 and word_count <= 160:
-            final_response += paragraph.strip()
-            break
-        
-        # Add paragraph to final response if not exceeding word limit
-        final_response += paragraph.strip() + "\n\n"
+    # Filter sentences for relevance and coherence
+    sentences = generated_text.split(". ")
+    filtered_sentences = [
+        sentence.strip()
+        for sentence in sentences
+        if len(sentence) > 20 and not sentence.startswith("How does")
+    ]  # Keep meaningful sentences and filter out irrelevant ones
+    
+    final_response = ". ".join(filtered_sentences)
     
     # Ensure the response ends logically
     if not final_response.endswith("."):
@@ -114,24 +105,16 @@ st.set_page_config(
 )
 
 # App Header
-# Streamlit Appearance Setup
-st.set_page_config(
-    page_title="Baymax 🩺",
-    page_icon="🤖",
-    layout="wide",
-)
-
-# App Header
-st.title("Baymax")
-st.subheader("Your Personal Healthcare Companion")
+st.title("Cel.AI🤖")
+st.subheader("The Gluten Intolerance GPT")
 st.markdown("""
-Welcome to **Baymax**, your personal healthcare companion! 🌟  
-Ask me anything about health, wellness, or medical concerns.  
-I use advanced AI and a curated knowledge base to provide accurate, helpful responses.
+Welcome to the **Gluten Free Lifestyle Assistant**! 🌟  
+Ask me anything about celiac disease or related health concerns.  
+I use advanced AI and a curated knowledge base to provide accurate responses.
 """)
 
 # Sidebar Configuration
-st.sidebar.title("⚙️ Settings")
+st.sidebar.title("Settings ⚙️")
 st.sidebar.markdown("Adjust your preferences and explore additional options here!")
 
 # Main Chat Interface
@@ -155,6 +138,6 @@ if st.button("Get Response 🚀"):
 st.markdown("""
 ---
 **Pro Tip:** Use specific queries for the best results!  
-**Example:** "What are the symptoms of diabetes?"
+**Example:** "What are the symptoms of celiac disease?"
 """)
-st.markdown("Made with ❤️ for your health and well-being.")
+st.markdown("Made with ❤️ for all Celiac Patients and health freaks out there.")
