@@ -187,4 +187,4 @@ st.markdown("""
 **Pro Tip:** Use specific queries for the best results!  
 **Example:** "What are the symptoms of diabetes?"
 """)
-st.markdown("Made with ❤️ for your health and well-being.")
+st.markdown("Made with ❤️ for your health and well-being. Love, Baymax")
