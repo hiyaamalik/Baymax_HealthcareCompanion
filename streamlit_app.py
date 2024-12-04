@@ -35,22 +35,19 @@ knowledge_base = [
 
 
 
-# Function to encode text into embeddings using a pre-trained model
-def encode_text(texts):
-    tokenizer = AutoTokenizer.from_pretrained("distilgpt2")
-    model = AutoModelForCausalLM.from_pretrained("distilgpt2")
-    
-    tokenizer.pad_token_id = tokenizer.eos_token_id  # Use eos_token_id for padding
-    tokenizer.pad_token = tokenizer.eos_token      # Padding will use eos_token
-    
-    inputs = tokenizer(texts, return_tensors="pt", padding=True, truncation=True, max_length=512)
-    outputs = model.transformer.wte(inputs.input_ids.to(device))
-    return outputs.mean(dim=1).detach().cpu().numpy()
 
-# Encode the knowledge base and create a FAISS index
+# Using a pre-trained Sentence-BERT model to generate better embeddings
+sentence_model = SentenceTransformer('all-MiniLM-L6-v2')
+
+def encode_text(texts):
+    embeddings = sentence_model.encode(texts, convert_to_numpy=True)
+    return embeddings
+
+# Rebuild the FAISS index
 encoded_kb = encode_text(knowledge_base)
 index = faiss.IndexFlatL2(encoded_kb.shape[1])
 index.add(np.array(encoded_kb))
+
 
 # Function to retrieve relevant information based on user query
 def retrieve_info(query):
@@ -64,12 +61,15 @@ def generate_response(query):
     # Retrieve relevant context from the knowledge base
     context = retrieve_info(query)
     
-    # Format the prompt
-    prompt = (
-        f"User Query: {query}\n"
-        f"Context: {context}\n\n"
-        
-    )
+    # Create a refined prompt
+    prompt = f"""
+    User's Query: {query}
+
+    Context:
+    {context}
+
+    Based on the above context, answer the user's query as accurately and concisely as possible, focusing on the most relevant information. 
+    """
     
     # Generate the response
     response = generator(
@@ -84,30 +84,22 @@ def generate_response(query):
     
     # Extract and clean the generated text
     generated_text = response[0]["generated_text"].strip()
-    
-    # Post-process to remove unwanted content
-    if "Answer:" in generated_text:
-        generated_text = generated_text.split("Answer:")[-1].strip()
-    
+
     # Filter sentences for relevance and coherence
     sentences = generated_text.split(". ")
     filtered_sentences = [
         sentence.strip()
         for sentence in sentences
-        if len(sentence) > 20 and not sentence.startswith("How does")
-    ]  # Keep meaningful sentences and filter out irrelevant ones
-    
+        if len(sentence) > 20
+    ]
+
     final_response = ". ".join(filtered_sentences)
     
-    # Ensure the response ends logically
     if not final_response.endswith("."):
         final_response += "."
     
-    # Fallback for overly vague or failed responses
-    if len(final_response) < 20:
-        final_response = "I'm sorry, I couldn't find a suitable answer. Please try rephrasing your question."
-    
     return final_response
+
 
 
 
