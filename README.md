@@ -2,7 +2,7 @@
 ## Your personal healthcare companion
 ###
 
-A simple Streamlit app that provides AI-powered healthcare guidance, focusing on chronic conditions like celiac disease, gluten intolerance, and other health-related concerns.
+A Streamlit Cloud app that provides AI-powered healthcare guidance, leveraging a knowledge base curated and managed by medical experts to deliver accurate, up-to-date information and personalized support.
 
 [![Open in Streamlit](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://chatbot-template.streamlit.app/)
 
@@ -33,11 +33,13 @@ A simple Streamlit app that provides AI-powered healthcare guidance, focusing on
    ```
 
    
-3. Visit `http://localhost:8501` to interact with your healthcare assistant.
+3. Visit `https://baymaxhealthcarecompanion.streamlit.app/` to interact with your healthcare assistant.
 
-### Screenshots 📸
+### Meet Baymax📸
 
 ![Baymax - Healthcare Companion](https://i.pinimg.com/originals/3a/a8/51/3aa851a0f34d6703c7f0ac7ff6a41e8a.png)
+
+Baymax is a lovable and caring healthcare companion designed to comfort and assist those in need. Originally introduced in the animated movie Big Hero 6, Baymax is a friendly, inflatable robot with a deep commitment to helping others. His primary function is to offer medical care and emotional support, ensuring the well-being of those around him. With a gentle personality and an unwavering dedication to health, Baymax has become a symbol of compassion, making him the perfect guide for anyone navigating their wellness journey.
 
 ### Contributing 🤝
 
