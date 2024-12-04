@@ -70,8 +70,7 @@ def generate_response(query):
     Context:
     {context}
 
-    Based on the above context, answer the user's query as accurately and concisely as possible, focusing on the most relevant information. 
-    If the query is about specific topics like 'hypertension,' return only the answer related to that without extending into unnecessary details.
+    
     """
     
     # Generate the response
@@ -96,8 +95,8 @@ def generate_response(query):
         if len(sentence) > 20  # Ensure each sentence is not too short
     ]
 
-    # Check if we have an answer to the query without unnecessary details
-    final_response = ". ".join(filtered_sentences)
+    # Combine the filtered sentences into a single paragraph
+    final_response = " ".join(filtered_sentences)
     
     # Ensure the response ends with a period
     if not final_response.endswith("."):
