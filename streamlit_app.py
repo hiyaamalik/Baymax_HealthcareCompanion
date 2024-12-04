@@ -3,6 +3,7 @@ from transformers import pipeline, AutoModelForCausalLM, AutoTokenizer
 import faiss
 import numpy as np
 import torch
+from sentence_transformers import SentenceTransformer
 
 # Ensure the device is set correctly for PyTorch (if you're using a GPU)
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
