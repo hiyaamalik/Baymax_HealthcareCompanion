@@ -64,15 +64,20 @@ knowledge_base = [
 
 
 # Function to encode text into embeddings using a pre-trained model
+from transformers import AutoTokenizer, AutoModelForCausalLM
+import faiss
+import numpy as np
+
+# Function to encode text
 def encode_text(texts):
     tokenizer = AutoTokenizer.from_pretrained("distilgpt2")
     model = AutoModelForCausalLM.from_pretrained("distilgpt2")
     
     tokenizer.pad_token_id = tokenizer.eos_token_id  # Use eos_token_id for padding
-    tokenizer.pad_token = tokenizer.eos_token      # Padding will use eos_token
+    tokenizer.pad_token = tokenizer.eos_token  # Padding will use eos_token
     
     inputs = tokenizer(texts, return_tensors="pt", padding=True, truncation=True, max_length=512)
-    outputs = model.transformer.wte(inputs.input_ids.to(device))
+    outputs = model.transformer.wte(inputs.input_ids)  # Correct access to model embedding weights
     return outputs.mean(dim=1).detach().cpu().numpy()
 
 # Encode the knowledge base and create a FAISS index
@@ -83,37 +88,42 @@ index.add(np.array(encoded_kb))
 # Function to retrieve relevant information based on user query
 def retrieve_info(query):
     query_vec = encode_text([query])
-    D, I = index.search(query_vec, k=3)
-    relevant_info = [knowledge_base[i] for i in I[0]]
-    return " ".join(relevant_info)
+    D, I = index.search(query_vec, k=3)  # Retrieve top 3 relevant texts
+    relevant_info = [knowledge_base[i] for i in I[0]]  # Retrieve information from the knowledge base
+    return " ".join(relevant_info)  # Combine the retrieved texts into a single string for context
 
 # Function to generate a response based on the query and relevant context
 def generate_response(query):
     # Retrieve relevant context from the knowledge base
     context = retrieve_info(query)
     
-    # Format the prompt
+    # Format the prompt to emphasize the context is related to the query
     prompt = (
         f"User Query: {query}\n"
         f"Context: {context}\n\n"
+        "Answer the query based on the context provided. Be specific and relevant to the topic."
     )
     
-    # Get the EOS token ID for the full stop (.)
-    eos_token_id = generator.tokenizer.convert_tokens_to_ids(".")
+    # Initialize the model and tokenizer
+    generator = AutoModelForCausalLM.from_pretrained("distilgpt2")
+    tokenizer = AutoTokenizer.from_pretrained("distilgpt2")
+    
+    eos_token_id = tokenizer.convert_tokens_to_ids(".")  # Full stop (.) as EOS token
     
     # Generate the response
-    response = generator(
-        prompt,
-        max_length=150,  # Adjust length for concise answers
+    response = generator.generate(
+        input_ids=tokenizer(prompt, return_tensors="pt").input_ids,
+        max_length=150,
         num_return_sequences=1,
         temperature=0.7,  # Moderate creativity for detailed answers
         repetition_penalty=1.2,  # Avoid repetitive phrases
-        truncation=True,
-        pad_token_id=eos_token_id  # Full stop as pad token
+        pad_token_id=eos_token_id,  # Full stop as pad token
+        eos_token_id=eos_token_id,  # Ensure the response ends with a full stop
+        truncation=True
     )
     
-    # Extract and clean the generated text
-    generated_text = response[0]["generated_text"].strip()
+    # Decode the response and clean it
+    generated_text = tokenizer.decode(response[0], skip_special_tokens=True).strip()
     
     # Post-process to remove unwanted content
     if "Answer:" in generated_text:
@@ -138,6 +148,11 @@ def generate_response(query):
         final_response = "I'm sorry, I couldn't find a suitable answer. Please try rephrasing your question."
     
     return final_response
+
+# Test the improved function with a query about diabetes
+query = "how is diabetes caused"
+response = generate_response(query)
+print(response)
 
 
 
