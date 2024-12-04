@@ -62,6 +62,7 @@ knowledge_base = [
     "Good mental health practices, like mindfulness and relaxation techniques, can help manage stress and improve overall well-being."
 ]
 
+
 # Function to encode text into embeddings using a pre-trained model
 def encode_text(texts):
     tokenizer = AutoTokenizer.from_pretrained("distilgpt2")
@@ -95,6 +96,7 @@ def generate_response(query):
     prompt = (
         f"User Query: {query}\n"
         f"Context: {context}\n\n"
+        
     )
     
     # Generate the response
@@ -135,6 +137,9 @@ def generate_response(query):
     
     return final_response
 
+
+
+
 # Streamlit Appearance Setup
 st.set_page_config(
     page_title="Baymax here!",
@@ -142,38 +147,41 @@ st.set_page_config(
     layout="wide",
 )
 
-# Initialize conversation history if not already present
-if "history" not in st.session_state:
-    st.session_state.history = []
+# App Header
+st.title("Baymax🩺")
+st.subheader("Your Personal Healthcare Companion")
+st.markdown("""
+Welcome to **Baymax**, your personal healthcare companion! 🌟  
+Ask me anything about health, wellness, or medical concerns.  
+I use advanced AI and a curated knowledge base to provide accurate, helpful responses.
+""")
 
-# User Input Section
-with st.form(key="query_form"):
-    user_input = st.text_input("Ask Baymax a question!", key="user_input")
-    submit_button = st.form_submit_button(label="Submit")
-
-# Store user input and assistant's response in history
-if submit_button and user_input:
-    response = generate_response(user_input)
-    
-    # Add the conversation to history
-    st.session_state.history.append({"user": user_input, "assistant": response})
-    
-    # Clear the input field
-    st.session_state.user_input = ""
-    
-# Display conversation history
-for i, conversation in enumerate(st.session_state.history):
-    st.markdown(f"**User:** {conversation['user']}")
-    st.markdown(f"**Baymax:** {conversation['assistant']}")
-
-# Display conversation history in Streamlit
-if st.session_state.history:
-    for chat in st.session_state.history:
-        st.write(f"**User:** {chat['user']}")
-        st.write(f"**Baymax:** {chat['assistant']}")
+# Sidebar Configuration
+st.sidebar.image(
+    "https://i.pinimg.com/originals/3a/a8/51/3aa851a0f34d6703c7f0ac7ff6a41e8a.png",
+    caption="Baymax: Your Personal Healthcare Companion",
+    use_column_width=True
+)
 
 
-# Footer Section
+# Main Chat Interface
+st.subheader("🔍 Ask Your Question")
+query = st.text_input("Type your question here:", help="E.g., What are the symptoms of celiac disease?")
+
+if st.button("Get Response 🚀"):
+    if query.strip():
+        with st.spinner("Thinking... 🤔"):
+            try:
+                # Generate the AI response based on the user's query
+                response = generate_response(query)
+                st.success("Here's what I found! 🧠")
+                st.markdown(f"**{response}**")
+            except Exception as e:
+                st.error(f"Something went wrong! 😕 Error: {e}")
+    else:
+        st.warning("Please enter a valid question! 📝")
+
+# Footer
 st.markdown("""
 ---
 **Pro Tip:** Use specific queries for the best results!  
