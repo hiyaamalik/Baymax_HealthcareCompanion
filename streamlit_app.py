@@ -158,10 +158,11 @@ I use advanced AI and a curated knowledge base to provide accurate, helpful resp
 
 # Sidebar Configuration
 st.sidebar.image(
-    "https://i.pinimg.com/originals/3a/a8/51/3aa851a0f34d6703c7f0ac7ff6a41e8a.png/400",  # Replace this URL with your image path or link
-    caption="Baymax: Always Here for You",
+    "https://i.pinimg.com/originals/3a/a8/51/3aa851a0f34d6703c7f0ac7ff6a41e8a.png",
+    caption="Baymax: Your Personal Healthcare Companion",
     use_column_width=True
 )
+
 
 # Main Chat Interface
 st.subheader("🔍 Ask Your Question")
