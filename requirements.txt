@@ -6,3 +6,4 @@ numpy
 pandas
 scipy
 scikit-learn
+sentence-transformers
