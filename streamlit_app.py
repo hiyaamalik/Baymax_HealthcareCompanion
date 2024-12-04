@@ -96,7 +96,6 @@ def generate_response(query):
     prompt = (
         f"User Query: {query}\n"
         f"Context: {context}\n\n"
-        
     )
     
     # Generate the response
@@ -107,7 +106,7 @@ def generate_response(query):
         temperature=0.7,  # Moderate creativity for detailed answers
         repetition_penalty=1.2,  # Avoid repetitive phrases
         truncation=True,
-        pad_token_id=generator.tokenizer.eos_token_id,
+        pad_token_id=generator.tokenizer.convert_tokens_to_ids(".")  # Full stop as pad token
     )
     
     # Extract and clean the generated text
@@ -127,7 +126,7 @@ def generate_response(query):
     
     final_response = ". ".join(filtered_sentences)
     
-    # Ensure the response ends logically
+    # Ensure the response ends with a full stop
     if not final_response.endswith("."):
         final_response += "."
     
@@ -136,6 +135,7 @@ def generate_response(query):
         final_response = "I'm sorry, I couldn't find a suitable answer. Please try rephrasing your question."
     
     return final_response
+
 
 
 
