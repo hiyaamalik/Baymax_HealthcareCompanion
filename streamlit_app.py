@@ -1,7 +1,8 @@
-import torch
+import streamlit as st
+from transformers import pipeline, AutoModelForCausalLM, AutoTokenizer
 import faiss
 import numpy as np
-from transformers import pipeline, AutoModelForCausalLM, AutoTokenizer
+import torch
 
 # Ensure the device is set correctly for PyTorch (if you're using a GPU)
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -11,10 +12,54 @@ generator = pipeline("text-generation", model="distilgpt2", device=device)
 
 # Define a simple medical knowledge base (this can be expanded)
 knowledge_base = [
-    "Celiac disease is an autoimmune disorder where the ingestion of gluten causes damage to the small intestine.",
-    "The disease is triggered by the body's immune response to gluten, leading to inflammation and damage to the villi.",
-    "Symptoms of celiac disease include diarrhea, weight loss, abdominal pain, and fatigue.",
-    # Add more entries as needed
+    "Celiac disease is an autoimmune disorder where the ingestion of gluten causes damage to the small intestine. "
+    "The disease is triggered by the body's immune response to gluten, leading to inflammation and damage to the villi. "
+    "Celiac disease requires a lifelong gluten-free diet to manage symptoms and prevent complications.",
+    "Symptoms of celiac disease include diarrhea, weight loss, abdominal pain, and fatigue. It can also lead to skin rashes, bone pain, and mood changes.",
+    "A gluten-free diet is essential for managing celiac disease. Avoiding gluten helps heal the damaged small intestine and prevent further health problems.",
+    "Gluten is a protein found in wheat, barley, and rye. Individuals with celiac disease must completely avoid foods containing these grains.",
+    "Baymax is a versatile AI-powered personal healthcare companion designed to assist with medical queries, wellness tracking, and health insights.",
+    "Maintaining hydration is essential for overall health, as water supports digestion, nutrient absorption, and cellular function.",
+    "Diabetes is a chronic condition characterized by high blood sugar levels due to insufficient insulin production or the body's inability to use insulin effectively.",
+    "Regular exercise can significantly improve cardiovascular health, mental well-being, and weight management.",
+    "Hypertension, or high blood pressure, is a condition where the force of blood against the artery walls is consistently too high, increasing the risk of heart disease.",
+    "Asthma is a chronic respiratory condition that causes inflammation and narrowing of the airways, leading to difficulty breathing, wheezing, and coughing.",
+    "Mental health is a crucial aspect of overall wellness, encompassing emotional, psychological, and social well-being.",
+    "Chronic stress can negatively impact both mental and physical health, contributing to conditions such as anxiety, depression, and hypertension.",
+    "A balanced diet rich in fruits, vegetables, lean proteins, and whole grains is essential for maintaining optimal health.",
+    "Sleep is vital for physical recovery and mental clarity. Adults should aim for 7-9 hours of sleep per night.",
+    "Anemia is a condition in which the body lacks enough healthy red blood cells to carry adequate oxygen to tissues, often causing fatigue and weakness.",
+    "Allergies occur when the immune system reacts to a foreign substance such as pollen, pet dander, or certain foods.",
+    "Vitamin D is essential for bone health and immune function. Sun exposure and fortified foods are common sources.",
+    "Migraine is a neurological condition characterized by intense, throbbing headaches often accompanied by nausea, sensitivity to light, and sound.",
+    "Arthritis refers to inflammation of the joints, causing pain, stiffness, and decreased mobility.",
+    "Regular health checkups and screenings are vital for early detection and management of potential health issues.",
+    "Cancer is the uncontrolled growth of abnormal cells in the body, which can invade nearby tissues and spread to other parts of the body.",
+    "Cardiovascular diseases, including heart attacks and strokes, are the leading cause of death globally, often preventable through lifestyle changes.",
+    "Smoking is one of the leading causes of preventable diseases, including lung cancer, heart disease, and chronic obstructive pulmonary disease (COPD).",
+    "Obesity increases the risk of various health conditions, including type 2 diabetes, hypertension, and sleep apnea.",
+    "The immune system protects the body against infections and diseases by identifying and neutralizing harmful pathogens.",
+    "Vaccines are critical for preventing diseases such as measles, polio, and influenza by training the immune system to recognize pathogens.",
+    "Chronic kidney disease is a condition in which the kidneys lose their ability to filter waste from the blood effectively.",
+    "Osteoporosis is a condition characterized by weak and brittle bones, increasing the risk of fractures, especially in older adults.",
+    "Alzheimer's disease is a progressive neurological disorder that leads to memory loss, cognitive decline, and changes in behavior.",
+    "Depression is a common mental health disorder that negatively affects mood, thoughts, and physical well-being.",
+    "The digestive system breaks down food into nutrients the body can absorb, involving organs such as the stomach, intestines, and liver.",
+    "Skin health is influenced by factors such as diet, hydration, and protection from UV rays. Sunscreen is essential for preventing skin damage.",
+    "The respiratory system supplies oxygen to the body and removes carbon dioxide, relying on organs like the lungs and trachea.",
+    "The liver is a vital organ responsible for detoxifying the blood, producing bile, and regulating metabolism.",
+    "The endocrine system regulates hormones that control growth, metabolism, and reproduction, with the thyroid gland playing a significant role.",
+    "The brain is the control center of the body, managing functions like memory, emotions, and motor coordination.",
+    "The human microbiome, consisting of trillions of microorganisms, plays a crucial role in digestion, immunity, and overall health.",
+    "Anxiety disorders are among the most common mental health conditions, characterized by excessive worry and fear.",
+    "Exercise releases endorphins, which act as natural painkillers and mood elevators.",
+    "Posture affects musculoskeletal health, and poor posture can lead to back pain and other physical issues.",
+    "Dehydration can cause symptoms such as headache, dizziness, and fatigue, highlighting the importance of drinking enough water daily.",
+    "Nutritional deficiencies, such as a lack of iron or vitamin B12, can lead to specific health problems like anemia.",
+    "Good oral hygiene, including brushing and flossing, helps prevent dental issues such as cavities and gum disease.",
+    "Prolonged exposure to loud noise can lead to hearing loss, emphasizing the importance of protecting your ears in noisy environments.",
+    "The heart beats approximately 100,000 times per day, pumping oxygenated blood throughout the body.",
+    "Good mental health practices, like mindfulness and relaxation techniques, can help manage stress and improve overall well-being."
 ]
 
 # Function to encode text into embeddings using a pre-trained model
@@ -90,67 +135,43 @@ def generate_response(query):
     
     return final_response
 
-
-
-
-
-import streamlit as st
-from part1 import generate_response  # Import the response generation logic from Part 1
-
 # Streamlit Appearance Setup
 st.set_page_config(
-    page_title="Baymax🩺",
+    page_title="Baymax here!",
     page_icon="⚕️",
     layout="wide",
 )
 
-# App Header with Branding
-st.title("Baymax🩺")
-st.subheader("Your Personal Healthcare Companion")
-st.markdown("""
-Welcome to **Baymax**, your personal healthcare companion! 🌟  
-Ask me anything about health, wellness, or medical concerns.  
-I use advanced AI and a curated knowledge base to provide accurate, helpful responses.
-""")
-
-# Sidebar Configuration with Image and Caption
-st.sidebar.image(
-    "https://i.pinimg.com/originals/3a/a8/51/3aa851a0f34d6703c7f0ac7ff6a41e8a.png",
-    caption="Baymax: Your Personal Healthcare Companion",
-    use_column_width=True
-)
-
-# Manage conversation history
+# Initialize conversation history if not already present
 if "history" not in st.session_state:
     st.session_state.history = []
 
-# Main Chat Interface Section
-st.subheader("🔍 Ask Your Question")
-query = st.text_input("Type your question here:", help="E.g., What are the symptoms of celiac disease?")
+# User Input Section
+with st.form(key="query_form"):
+    user_input = st.text_input("Ask Baymax a question!", key="user_input")
+    submit_button = st.form_submit_button(label="Submit")
 
-# Button to trigger response generation
-if st.button("Get Response 🚀"):
-    if query.strip():
-        with st.spinner("Thinking... 🤔"):
-            try:
-                # Generate the AI response based on the user's query
-                response = generate_response(query)
-                st.success("Here's what I found! 🧠")
-                st.markdown(f"**{response}**")
+# Store user input and assistant's response in history
+if submit_button and user_input:
+    response = generate_response(user_input)
+    
+    # Add the conversation to history
+    st.session_state.history.append({"user": user_input, "assistant": response})
+    
+    # Clear the input field
+    st.session_state.user_input = ""
+    
+# Display conversation history
+for i, conversation in enumerate(st.session_state.history):
+    st.markdown(f"**User:** {conversation['user']}")
+    st.markdown(f"**Baymax:** {conversation['assistant']}")
 
-                # Append the conversation history
-                st.session_state.history.append(f"User: {query}")
-                st.session_state.history.append(f"Baymax: {response}")
-            except Exception as e:
-                st.error(f"Something went wrong! 😕 Error: {e}")
-    else:
-        st.warning("Please enter a valid question! 📝")
-
-# Display the conversation history
+# Display conversation history in Streamlit
 if st.session_state.history:
-    st.write("### Conversation History")
-    for message in st.session_state.history:
-        st.write(message)
+    for chat in st.session_state.history:
+        st.write(f"**User:** {chat['user']}")
+        st.write(f"**Baymax:** {chat['assistant']}")
+
 
 # Footer Section
 st.markdown("""
