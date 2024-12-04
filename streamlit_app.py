@@ -71,12 +71,13 @@ def generate_response(query):
     {context}
 
     Based on the above context, answer the user's query as accurately and concisely as possible, focusing on the most relevant information. 
+    If the query is about specific topics like 'hypertension,' return only the answer related to that without extending into unnecessary details.
     """
     
     # Generate the response
     response = generator(
         prompt,
-        max_new_tokens=160,  # Adjust number of new tokens to control output length
+        max_new_tokens=160,  # Limit the number of new tokens
         num_return_sequences=1,
         temperature=0.7,  # Moderate creativity for detailed answers
         repetition_penalty=1.2,  # Avoid repetitive phrases
@@ -92,16 +93,17 @@ def generate_response(query):
     filtered_sentences = [
         sentence.strip()
         for sentence in sentences
-        if len(sentence) > 20
+        if len(sentence) > 20  # Ensure each sentence is not too short
     ]
 
+    # Check if we have an answer to the query without unnecessary details
     final_response = ". ".join(filtered_sentences)
     
+    # Ensure the response ends with a period
     if not final_response.endswith("."):
         final_response += "."
-    
-    return final_response
 
+    return final_response
 
 
 
