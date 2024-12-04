@@ -4,34 +4,36 @@ import faiss
 import numpy as np
 import torch
 
-# Ensure the device is set correctly for PyTorch (if you're using a GPU)
+# Set device for PyTorch (GPU if available)
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-# Initialize the DistilGPT-2 model (a lighter version of GPT-2)
-generator = AutoModelForCausalLM.from_pretrained("distilgpt2").to(device)
-tokenizer = AutoTokenizer.from_pretrained("distilgpt2")
+# Initialize the DistilGPT-2 model (lighter version of GPT-2) for text generation
+generator = pipeline("text-generation", model="distilgpt2", device=device)
 
-# Define a simple medical knowledge base (this can be expanded)
+# Short knowledge base for celiac and general health information
 knowledge_base = [
-    "Celiac disease is an autoimmune disorder where the ingestion of gluten causes damage to the small intestine. "
-    "The disease is triggered by the body's immune response to gluten, leading to inflammation and damage to the villi. "
-    "Celiac disease requires a lifelong gluten-free diet to manage symptoms and prevent complications.",
-    "Symptoms of celiac disease include diarrhea, weight loss, abdominal pain, and fatigue. It can also lead to skin rashes, bone pain, and mood changes.",
-    "A gluten-free diet is essential for managing celiac disease. Avoiding gluten helps heal the damaged small intestine and prevent further health problems.",
-    "Gluten is a protein found in wheat, barley, and rye. Individuals with celiac disease must completely avoid foods containing these grains.",
-    # Add more relevant knowledge as needed
+    "Celiac disease is an autoimmune disorder where the ingestion of gluten causes damage to the small intestine. It requires a gluten-free diet.",
+    "Symptoms of celiac disease include diarrhea, weight loss, and abdominal pain. It is important to avoid gluten-containing foods.",
+    "A gluten-free diet helps heal the small intestine and prevents complications in individuals with celiac disease.",
+    "Gluten is a protein found in wheat, barley, and rye. Celiac patients must completely avoid these grains.",
+    "Diabetes is a chronic condition where the body struggles to regulate blood sugar levels. Lifestyle changes and medication can help manage it.",
+    "Hypertension is high blood pressure, which increases the risk of heart disease and stroke. Managing it involves lifestyle changes and sometimes medication.",
+    "Mental health is essential for overall well-being, and conditions like anxiety or depression can significantly impact daily life.",
+    "Hydration is crucial for bodily functions like digestion, nutrient absorption, and maintaining healthy skin."
 ]
 
 # Function to encode text into embeddings using a pre-trained model
 def encode_text(texts):
+    tokenizer = AutoTokenizer.from_pretrained("distilgpt2")
+    model = AutoModelForCausalLM.from_pretrained("distilgpt2")
     tokenizer.pad_token_id = tokenizer.eos_token_id  # Use eos_token_id for padding
     tokenizer.pad_token = tokenizer.eos_token  # Padding will use eos_token
     
-    inputs = tokenizer(texts, return_tensors="pt", padding=True, truncation=True, max_length=512)
-    outputs = generator.transformer.wte(inputs.input_ids)  # Correct access to model embedding weights
+    inputs = tokenizer(texts, return_tensors="pt", padding=True, max_length=512)
+    outputs = model.transformer.wte(inputs.input_ids)  # Correct access to model embedding weights
     return outputs.mean(dim=1).detach().cpu().numpy()
 
-# Encode the knowledge base and create a FAISS index
+# Encode the knowledge base and create a FAISS index for efficient similarity search
 encoded_kb = encode_text(knowledge_base)
 index = faiss.IndexFlatL2(encoded_kb.shape[1])
 index.add(np.array(encoded_kb))
@@ -55,47 +57,22 @@ def generate_response(query):
         "Answer the query based on the context provided. Be specific and relevant to the topic."
     )
     
+    # Generate the response using the pre-trained model
     eos_token_id = tokenizer.convert_tokens_to_ids(".")  # Full stop (.) as EOS token
-    
-    # Generate the response
-    inputs = tokenizer(prompt, return_tensors="pt").to(device)
     response = generator.generate(
-        input_ids=inputs.input_ids,
+        input_ids=tokenizer(prompt, return_tensors="pt").input_ids.to(device),
         max_length=150,
         num_return_sequences=1,
         temperature=0.7,  # Moderate creativity for detailed answers
         repetition_penalty=1.2,  # Avoid repetitive phrases
         pad_token_id=eos_token_id,  # Full stop as pad token
-        eos_token_id=eos_token_id,  # Ensure the response ends with a full stop
-        truncation=True
+        eos_token_id=eos_token_id  # Ensure the response ends with a full stop
     )
     
     # Decode the response and clean it
     generated_text = tokenizer.decode(response[0], skip_special_tokens=True).strip()
     
-    # Post-process to remove unwanted content
-    if "Answer:" in generated_text:
-        generated_text = generated_text.split("Answer:")[-1].strip()
-    
-    # Filter sentences for relevance and coherence
-    sentences = generated_text.split(". ")
-    filtered_sentences = [
-        sentence.strip()
-        for sentence in sentences
-        if len(sentence) > 20 and not sentence.startswith("How does")
-    ]  # Keep meaningful sentences and filter out irrelevant ones
-    
-    final_response = ". ".join(filtered_sentences)
-    
-    # Ensure the response ends with a full stop
-    if not final_response.endswith("."):
-        final_response += "."
-    
-    # Fallback for overly vague or failed responses
-    if len(final_response) < 20:
-        final_response = "I'm sorry, I couldn't find a suitable answer. Please try rephrasing your question."
-    
-    return final_response
+    return generated_text
 
 # Streamlit Appearance Setup
 st.set_page_config(
