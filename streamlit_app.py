@@ -158,7 +158,7 @@ I use advanced AI and a curated knowledge base to provide accurate, helpful resp
 
 # Sidebar Configuration
 st.sidebar.image(
-    "https://drive.google.com/file/d/1Frnx80-crQ_bcZWp-WXvBvuVKaDBzbEn/view?usp=sharing",  # Replace this URL with your image path or link
+    "https://i.pinimg.com/originals/3a/a8/51/3aa851a0f34d6703c7f0ac7ff6a41e8a.png/400",  # Replace this URL with your image path or link
     caption="Baymax: Always Here for You",
     use_column_width=True
 )
