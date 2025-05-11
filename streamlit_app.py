@@ -5,11 +5,10 @@ import numpy as np
 import torch
 from sentence_transformers import SentenceTransformer
 
-# Ensure the device is set correctly for PyTorch (if you're using a GPU)
-device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-# Initialize the DistilGPT-2 model (a lighter version of GPT-2)
+device = 0 if torch.cuda.is_available() else -1
 generator = pipeline("text-generation", model="distilgpt2", device=device)
+
 
 # Define a simple medical knowledge base (this can be expanded)
 knowledge_base = [
